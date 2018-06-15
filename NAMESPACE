@@ -1,0 +1,3 @@
+exportPattern("^[[:alpha:]]+")
+import(stabledist, nnls, mvtnorm)
+importFrom("stats", "na.omit", "nlm", "optimize", "rweibull", "rexp", "runif", "uniroot", "dnorm")
