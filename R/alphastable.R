@@ -401,22 +401,22 @@ ww<-matrix(0,ncol=d,nrow=n)
 				else
 				{
 					rr<-(rstable(N,a0/2,1,(cos(pi*a0/4))^(2/a0),0,1))
-					ss1<-sum(na.omit(rr^(-d/2-1)*exp(-.5*dis/rr)))
-					ss2<-sum(na.omit(rr^(-d/2)*exp(-.5*dis/rr)))
+					ss1<-sum(rr^(-d/2-1)*exp(-.5*dis/rr),na.rm=TRUE)
+					ss2<-sum(rr^(-d/2)*exp(-.5*dis/rr),na.rm=TRUE)
 					sm[i]<-ss1/ss2
 				}
 			}
 		ee<-sqrt(rexp(n,1))
 					for (j in 1:d)
 					{
-						mu.matrix[r,j]<-suppressWarnings(sum(yy[,j]*sm)/sum(sm))
+						mu.matrix[r,j]<-suppressWarnings(sum(yy[,j]*sm,na.rm=TRUE)/sum(sm,na.rm=TRUE))
 						ww[,j]<-yy[,j]-m0[j]
 					}
 						m0<-mu.matrix[r,]
 						y<-ww/ee
 						Z<-c()
 							for (i in 1:n)
-							{	
+							{
 								num<-y[i,]%*%solve(s0)%*%y[i,]
 								up<-d^(d/2)*exp(-d/2)/num^(d/2)
 								j<-1
@@ -501,10 +501,10 @@ ufitstab.sym<-function(yy,alpha0,sigma0,mu0)
 						else
 						{
  							rr<-rstable(N,a0/2,1,(cos(pi*a0/4))^(2/a0),0,1)
- 							sm[i]<-sum(na.omit(1/(rr^(1.5))*exp(-(d^2/(2*sqrt(rr)*s0)^2))))/sum(na.omit(1/(rr^(.5))*exp(-(d^2/(2*sqrt(rr)*s0)^2))))
+ 							sm[i]<-sum(1/(rr^(1.5))*exp(-(d^2/(2*sqrt(rr)*s0)^2)),na.rm=TRUE)/sum(1/(rr^(0.5))*exp(-(d^2/(2*sqrt(rr)*s0)^2)),na.rm=TRUE)
 						}
 				}
- 			m0<-suppressWarnings(sum(yy*sm)/sum(sm))
+ 			m0<-sum(yy*sm,na.rm=TRUE)/sum(sm,na.rm=TRUE)
  			y<-(yy-m0)/ee
  				for (i in 1:n)
 				{
@@ -515,16 +515,16 @@ ufitstab.sym<-function(yy,alpha0,sigma0,mu0)
  							tt<-rweibull(1,a0,1)
  							ra<-exp(-.5)/(sqrt(2*pi)*abs(y0))
  							u<-runif(1)
- 								if (u<dnorm(y0,0,sqrt(2)*s0/tt)/ra) 
+ 								if (u<dnorm(y0,0,sqrt(2)*s0/tt)/ra)
  								{
 									Z1[j]<-tt
  									j<-j+1
-								}	
+								}
 						}
  					Z[i]<-Z1
 				}
  			f<-function(p){sum(-log(p[1])-(p[1]-1)*log(Z)+Z^p[1])}
- 			out<-suppressWarnings(nlm(f, p<-c(a0), hessian=TRUE))
+ 			out<-suppressWarnings(nlm(f, p<-c(a0), hessian=FALSE))
  			a0<-out$estimate[]
  			s0<-sqrt(sum(y^2*Z^2)/(2*n))
  			a[r+1,3]<-m0
@@ -537,7 +537,7 @@ ufitstab.sym<-function(yy,alpha0,sigma0,mu0)
 ufitstab.sym.mix<-function(yy,k,omega0,alpha0,sigma0,mu0)
 {
 	n<-length(yy)
-	m<-150  
+	m<-150
 	N<-4000
 	mu.matrix<-matrix(m*k,ncol=k,nrow=m)
 	sigma.matrix<-matrix(m*k,ncol=k,nrow=m)
@@ -547,6 +547,7 @@ ufitstab.sym.mix<-function(yy,k,omega0,alpha0,sigma0,mu0)
 	d<-matrix(n*k,ncol=k,nrow=n)
 	sm<-matrix(n*k,ncol=k,nrow=n)
 	ss<-matrix(n*k,ncol=k,nrow=n)
+	clustering<-rep(0,length(yy))
 	vv<-c()
 	mu.matrix[1,]<-mu0
 	p.matrix[1,]<-omega0
@@ -580,8 +581,8 @@ ufitstab.sym.mix<-function(yy,k,omega0,alpha0,sigma0,mu0)
 						else
 						{
 							rr<-rstable(N,a0[ii]/2,1,(cos(pi*a0[ii]/4))^(2/a0[ii]),0,1)
-							ss1<-sum(na.omit(1/rr^(1.5)*exp(-(yy[j]-m0[ii])^2/(2*sqrt(rr)*s0[ii])^2)))/N
-							ss2<-sum(na.omit(1/rr^(0.5)*exp(-(yy[j]-m0[ii])^2/(2*sqrt(rr)*s0[ii])^2)))/N
+							ss1<-sum(1/rr^(1.5)*exp(-(yy[j]-m0[ii])^2/(2*sqrt(rr)*s0[ii])^2),na.rm=TRUE)
+							ss2<-sum(1/rr^(0.5)*exp(-(yy[j]-m0[ii])^2/(2*sqrt(rr)*s0[ii])^2),na.rm=TRUE)
 							sm[j,ii]<-ss1/ss2
 						}
 					s.pdf<-0
@@ -594,7 +595,7 @@ ufitstab.sym.mix<-function(yy,k,omega0,alpha0,sigma0,mu0)
 			}
 										for (ii in 1:k)
 										{
-											mu.matrix[r,ii]<-sum(yy*sm[,ii]*tau.matrix[,ii])/sum(sm[,ii]*tau.matrix[,ii])
+											mu.matrix[r,ii]<-sum(yy*sm[,ii]*tau.matrix[,ii],na.rm=TRUE)/sum(sm[,ii]*tau.matrix[,ii],na.rm=TRUE)
 											m0[ii]<-mu.matrix[r,ii]
 											p0[ii]<-sum(tau.matrix[,ii])/n
 											p.matrix[r,ii]<-p0[ii]
@@ -606,11 +607,11 @@ ufitstab.sym.mix<-function(yy,k,omega0,alpha0,sigma0,mu0)
 												tt<-1
 													for (ii in 2:k)
 													{
-														if (tau.matrix[j,ii]> max) 
+														if (tau.matrix[j,ii]> max)
 														{
 															max<-tau.matrix[j,ii]
 															tt<-ii
-														} 
+														}
 													}
 												z[j,tt]<-1
 											}
@@ -629,7 +630,7 @@ ufitstab.sym.mix<-function(yy,k,omega0,alpha0,sigma0,mu0)
 																				{
 																					w<-rweibull(1,a0[bb],1)
 																					ex<-dnorm(y00[i],0,sqrt(2)*s0[bb]/w)
-																					if (runif(1)<ex/up) 
+																					if (runif(1)<ex/up)
 																					{
 																						Z[i]<-w
 																						j<-j+1
@@ -643,13 +644,13 @@ ufitstab.sym.mix<-function(yy,k,omega0,alpha0,sigma0,mu0)
 																		}
 
 																	f<-function(v){sum(-log(v[1])-(v[1]-1)*log(Z)+Z^v[1])}
-																	out<-nlm(f, v<-c(a0[bb]), hessian=TRUE)
+																	out<-suppressWarnings(nlm(f,v<-c(a0[bb]),hessian=FALSE))
 																	a11[bb,rrr]<-out$estimate[]
 																	if (a11[bb,rrr]>2)
 																	{
 																		a11[bb,rrr]<-1.99
 																	}
-																		a12[bb,rrr]<-sqrt(sum(y00^2*Z^2)/(2*n00))
+																		a12[bb,rrr]<-sqrt(sum(y00^2*Z^2,na.rm=TRUE)/(2*n00))
 																}
 																alpha.matrix[r,bb]<-mean(a11[bb,])
 																sigma.matrix[r,bb]<-mean(a12[bb,])
@@ -657,7 +658,8 @@ ufitstab.sym.mix<-function(yy,k,omega0,alpha0,sigma0,mu0)
 																s0[bb]<-sigma.matrix[r,bb]
 															}
 		}
-	return(list(omega=apply(p.matrix[(m-50):m,],2,mean),alpha=apply(alpha.matrix[(m-50):m,],2,mean),sigma=apply(sigma.matrix[(m-50):m,],2,mean),mu=apply(mu.matrix[(m-50):m,],2,mean),membership=z))
+	for (i in 1:length(yy)){clustering[i]<-which(z[i,]==1)[1]}
+	return(list(omega=apply(p.matrix[(m-50):m,],2,mean),alpha=apply(alpha.matrix[(m-50):m,],2,mean),sigma=apply(sigma.matrix[(m-50):m,],2,mean),mu=apply(mu.matrix[(m-50):m,],2,mean),cluster=clustering))
 }
 ufitstab.cauchy<-function(y,beta0,sigma0,mu0,param)
 {
@@ -705,7 +707,7 @@ ufitstab.cauchy<-function(y,beta0,sigma0,mu0,param)
 ufitstab.cauchy.mix<-function(y,k,omega0,beta0,sigma0,mu0)
 {
 	stopifnot(-1<=beta0,beta0<=1,length(beta0)==k,0<=sigma0,length(mu0)==k,length(sigma0)==k,sum(omega0)==1,0<omega0,omega0<1)
-	n <- length(y)
+	  n <- length(y)
     MM <- 1300
     NN <- 1500
     m <- 1500
@@ -729,6 +731,7 @@ ufitstab.cauchy.mix<-function(y,k,omega0,beta0,sigma0,mu0)
     t2 <- t2.matrix[1, ]
     m0 <- mu.matrix[1, ]
     b0 <- s0 <- dy <- c()
+    clustering<-rep(0,n)
 		for (r in 2:m)
 		{
 			for (i in 1:n)
@@ -739,28 +742,28 @@ ufitstab.cauchy.mix<-function(y,k,omega0,beta0,sigma0,mu0)
 					t1[bb]<-ifelse (abs(t1[bb])< 0.000001,t1[bb]<-.000001,t1[bb])
 					kk<-(y[i]-m0[bb]-t2[bb]*p2)/t1[bb]
 					tt<-0;rr<-0;
-					dy[bb]<-2^(tt/2)*gamma(tt/2+1)/(pi*t1[bb])*mean(p2^rr/(1+kk^2)^(tt/2+1))
+					dy[bb]<-2^(tt/2)*gamma(tt/2+1)/(pi*t1[bb])*mean(p2^rr/(1+kk^2)^(tt/2+1),na.rm=TRUE)
 					tt<-2;rr<-2;
-					e4ij[i,bb]<-2^(tt/2)*gamma(tt/2+1)/(pi*t1[bb])*mean(p2^rr/(1+kk^2)^(tt/2+1))/dy[bb]
+					e4ij[i,bb]<-2^(tt/2)*gamma(tt/2+1)/(pi*t1[bb])*mean(p2^rr/(1+kk^2)^(tt/2+1),na.rm=TRUE)/dy[bb]
 					tt<-2;rr<-1;
-					e3ij[i,bb]<-2^(tt/2)*gamma(tt/2+1)/(pi*t1[bb])*mean(p2^rr/(1+kk^2)^(tt/2+1))/dy[bb]
+					e3ij[i,bb]<-2^(tt/2)*gamma(tt/2+1)/(pi*t1[bb])*mean(p2^rr/(1+kk^2)^(tt/2+1),na.rm=TRUE)/dy[bb]
 					tt<-2;rr<-0;
-					e2ij[i,bb]<-2^(tt/2)*gamma(tt/2+1)/(pi*t1[bb])*mean(p2^rr/(1+kk^2)^(tt/2+1))/dy[bb]
+					e2ij[i,bb]<-2^(tt/2)*gamma(tt/2+1)/(pi*t1[bb])*mean(p2^rr/(1+kk^2)^(tt/2+1),na.rm=TRUE)/dy[bb]
 				}
 						for (aa in 1:k)
 						{
-							e1ij[i,aa]<-p0[aa]*dy[aa]/sum(p0*dy)
+							e1ij[i,aa]<-p0[aa]*dy[aa]/sum(p0*dy,na.rm=TRUE)
 						}
 			}
 								for (ii in 1:k)
 								{
-									mu.matrix[r,ii]<-(sum(y*e2ij[,ii]*e1ij[,ii])-t2[ii]*sum(e3ij[,ii]*e1ij[,ii]))/
-									sum(e1ij[,ii]*e2ij[,ii])
+									mu.matrix[r,ii]<-(sum(y*e2ij[,ii]*e1ij[,ii],na.rm=TRUE)-t2[ii]*sum(e3ij[,ii]*e1ij[,ii],na.rm=TRUE))/
+									sum(e1ij[,ii]*e2ij[,ii],na.rm=TRUE)
 									m0[ii]<-mu.matrix[r,ii]
-									t1.matrix[r,ii]<-sqrt((sum((y-m0[ii])^2*e2ij[,ii]*e1ij[,ii])-2*t2[ii]*
-									sum((y-m0[ii])*e3ij[,ii]*e1ij[,ii])+t2[ii]^2*sum(e4ij[,ii]*e1ij[,ii]))/sum(e1ij[,ii]))
+									t1.matrix[r,ii]<-sqrt((sum((y-m0[ii])^2*e2ij[,ii]*e1ij[,ii],na.rm=TRUE)-2*t2[ii]*
+									sum((y-m0[ii])*e3ij[,ii]*e1ij[,ii],na.rm=TRUE)+t2[ii]^2*sum(e4ij[,ii]*e1ij[,ii],na.rm=TRUE))/sum(e1ij[,ii],na.rm=TRUE))
 									t1[ii]<-t1.matrix[r,ii]
-									t2.matrix[r,ii]<-sum((y-m0[ii])*e3ij[,ii]*e1ij[,ii])/sum(e4ij[,ii]*e1ij[,ii])
+									t2.matrix[r,ii]<-sum((y-m0[ii])*e3ij[,ii]*e1ij[,ii],na.rm=TRUE)/sum(e4ij[,ii]*e1ij[,ii],na.rm=TRUE)
 									t2[ii]<-t2.matrix[r,ii]
 									p.matrix[r,ii]<-sum(e1ij[,ii])/n
 									p0[ii]<-p.matrix[r,ii]
@@ -782,7 +785,7 @@ ufitstab.cauchy.mix<-function(y,k,omega0,beta0,sigma0,mu0)
 											}
 																for (aa in 1:k)
 																{
-																	b0[aa]<-uniroot(function(p) t2[aa]/t1[aa]-p/(1-abs(p)),c(-.9999999,.9999999))$root
+																	b0[aa]<-suppressWarnings(uniroot(function(p) t2[aa]/t1[aa]-p/(1-abs(p)),c(-.9999999,.9999999))$root)
 																	s0[aa]<-t1[aa]/(1-abs(b0[aa]))
 																}
 			estim.matrix[1,,r]<-p0
@@ -794,7 +797,8 @@ ufitstab.cauchy.mix<-function(y,k,omega0,beta0,sigma0,mu0)
 	estim.matrix[2,,1]<-beta0
 	estim.matrix[3,,1]<-sigma0
 	estim.matrix[4,,1]<-mu0
-	return(list(omega=apply(estim.matrix[1,,(MM:NN)],1,mean),beta=apply(estim.matrix[2,,(MM:NN)],1,mean),sigma=apply(estim.matrix[3,,(MM:NN)],1,mean),mu=apply(estim.matrix[4,,(MM:NN)],1,mean)))
+	for (i in 1:length(y)){clustering[i]<-which(z[i,]==1)[1]}
+	return(list(omega=apply(estim.matrix[1,,(MM:NN)],1,mean),beta=apply(estim.matrix[2,,(MM:NN)],1,mean),sigma=apply(estim.matrix[3,,(MM:NN)],1,mean),mu=apply(estim.matrix[4,,(MM:NN)],1,mean),cluster=clustering))
 }
 ufitstab.skew<-function(y,alpha0,beta0,sigma0,mu0,param)
 {
@@ -813,15 +817,15 @@ ufitstab.skew<-function(y,alpha0,beta0,sigma0,mu0,param)
 					ep11[i]<-mean(ss,na.rm=TRUE)
 					dy<-ep11[i]
 					ep1[i]<-mean(ss/pi1,na.rm=TRUE)/dy
-					ep2[i]<-mean(ss*pi2/pi1)/dy
-					ep3[i]<-mean((ss*pi2^2/pi1))/dy
+					ep2[i]<-mean(ss*pi2/pi1,na.rm=TRUE)/dy
+					ep3[i]<-mean((ss*pi2^2/pi1),na.rm=TRUE)/dy
 				}
 						m[j+1]<-(sum((y+s[j]*b[j]*tan(pi*a[j]/2))*ep1,na.rm=TRUE)-s[j]*sign(b[j])*abs(b[j])^(1/a[j])*sum(ep2,na.rm=TRUE))/sum(ep1,na.rm=TRUE)
 						fs<-function(p){.5*sum((y-m[j])^2*ep1)/(abs(p)^3*(1-abs(b[j]))^(2/a[j]))+.5*b[j]*(tan(pi*a[j]/2))*sum((y-m[j])*ep1)/(p^2*(1-abs(b[j]))^(2/a[j]))-.5*sign(b[j])*abs(b[j])^(1/a[j])*sum((y-m[j])*ep2)/(p^2*(1-abs(b[j]))^(2/a[j]))-n/abs(p)}
 						s[j+1]<-suppressWarnings(uniroot(fs,c(0.000000001,10000000))$root)
 						fb<-function(p){.25*sum((y-m[j])^2*ep1)/(s[j]^2*(1-abs(p))^(2/a[j]))+.25*p^2*(tan(pi*a[j]/2))^2*sum(ep1)/((1-abs(p))^(2/a[j]))+.25*abs(p)^(2/a[j])*sum(ep3)/((1-abs(p))^(2/a[j]))+.5*p*(tan(pi*a[j]/2))*sum((y-m[j])*ep1)/(s[j]*(1-abs(p))^(2/a[j]))-.5*abs(p)^(1+1/a[j])*(tan(pi*a[j]/2))*sum(ep2)/((1-abs(p))^(2/a[j]))-.5*sign(p)*abs(p)^(1/a[j])*sum((y-m[j])*ep2)/(s[j]*(1-abs(p))^(2/a[j]))+sum(1/a[j]*(log(1-abs(p))))}
 						b[j+1]<-suppressWarnings(optimize(fb,lower=-.999999,upper=.999999))$minimum[[1]]
-						st<-suppressWarnings(rstable(n,a[j],1,1,0,1))     
+						st<-suppressWarnings(rstable(n,a[j],1,1,0,1))
 						sss[j]<-s[j]*(1+abs(b[j]))^(1/a[j])
 						yy<-(y-m[j]-s[j]*sign(b[j])*(abs(b[j]))^(1/a[j])*st)/sss[j]
 				for (ii in 1:20)
@@ -839,7 +843,7 @@ ufitstab.skew<-function(y,alpha0,beta0,sigma0,mu0,param)
  									tt<-rweibull(1,a[j],1)
  									ra<-exp(-.5)/(sqrt(2*pi)*abs(y0))
 	 								u<-runif(1)
- 										if (u<dnorm(y0,0,sqrt(2)/tt)/ra) 
+ 										if (u<dnorm(y0,0,sqrt(2)/tt)/ra)
  										{
 											Z1[jj]<-tt
  											jj<-jj+1

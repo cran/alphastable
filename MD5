@@ -1,6 +1,6 @@
-bfc0f49375a8cb62988d1e05d00fb939 *DESCRIPTION
-50084d3971030e43e73b79f32484f9de *NAMESPACE
-775fe79df80e01e675e9c03451433e20 *R/alphastable.R
+6cb3940e808fc72a8e7ff93a0fd1f8e1 *DESCRIPTION
+59858cc46b303046aec19fe8269d2bdb *NAMESPACE
+dd522c7b14e6e220a0076e876a28152e *R/alphastable.R
 91d9ecea57e72a1ee8c4a5d34ddb75b2 *man/mdstab.elliptical.Rd
 b4e2adb1ebafe9ceb230da451da55462 *man/mfitstab.elliptical.Rd
 90d4ce0256cb1204371331e0381f15bc *man/mfitstab.ustat.Rd
